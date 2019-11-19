@@ -21,7 +21,9 @@ import java.util.Queue;
 public class BreadthDispatcher implements Dispatcher {
 
   /**
-   * Per-thread queue of events to dispatch.
+   * 每个线程一个事件队列，用于支持通过 EventBus.post(event) 从多线程同时触发事件；
+   * 但每次调用 EventBus.post(event) 所触发的全部事件监听器，都会在调用
+   * EventBus.post(event) 的当前线程中执行（不会开新的线程执行事件监听器）；
    */
   private final ThreadLocal<Queue<EventWithListener>> queue =
     new ThreadLocal<Queue<EventWithListener>>() {
@@ -32,7 +34,7 @@ public class BreadthDispatcher implements Dispatcher {
     };
 
   /**
-   * Per-thread dispatch state, used to avoid reentrant event dispatching.
+   * 每个线程一个调度器状态, 用于避免单个线程内重入事件调度。
    */
   private final ThreadLocal<Boolean> dispatching =
     new ThreadLocal<Boolean>() {
