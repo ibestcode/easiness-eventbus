@@ -13,4 +13,9 @@ package cn.ibestcode.easiness.eventbus;
  * create by WFSO (仵士杰) at 2019/11/18 19:55
  */
 public interface EventBus {
+  void register(Object listener);
+
+  void unregister(Object listener);
+
+  void post(Object event);
 }

@@ -8,9 +8,22 @@
 
 package cn.ibestcode.easiness.eventbus;
 
+import cn.ibestcode.easiness.eventbus.dispatcher.*;
+
 /**
  * @author WFSO (仵士杰)
  * create by WFSO (仵士杰) at 2019/11/18 19:55
  */
-public class TransactionEventBus {
+public class TransactionEventBus extends AbstractEventBus {
+  private TransactionEventBus(Dispatcher dispatcher) {
+    super(dispatcher);
+  }
+
+  public static TransactionEventBus getDepthInstance() {
+    return new TransactionEventBus(new DepthDispatcher());
+  }
+
+  public static TransactionEventBus getBreadthInstance() {
+    return new TransactionEventBus(new BreadthDispatcher());
+  }
 }

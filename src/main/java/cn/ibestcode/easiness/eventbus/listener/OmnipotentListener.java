@@ -55,13 +55,19 @@ public class OmnipotentListener implements Listener {
   }
 
   @Override
-  public final void handle(Object event) {
+  public void handle(Object event) {
     try {
       method.invoke(target, event);
     } catch (IllegalAccessException e) {
-      throw new EventBusException(e);
+      throw new EventBusException("Method became inaccessible: " + event, e);
     } catch (InvocationTargetException e) {
-      throw new EventBusException(e.getCause());
+      if (e.getCause() instanceof Error) {
+        throw (Error) e.getCause();
+      }
+      if (e.getCause() instanceof RuntimeException) {
+        throw (RuntimeException) e.getCause();
+      }
+      throw new EventBusException("EventBus InvocationTargetException: " + event, e.getCause());
     }
   }
 }

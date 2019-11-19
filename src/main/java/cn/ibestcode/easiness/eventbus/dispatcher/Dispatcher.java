@@ -8,9 +8,14 @@
 
 package cn.ibestcode.easiness.eventbus.dispatcher;
 
+import cn.ibestcode.easiness.eventbus.listener.Listener;
+
+import java.util.List;
+
 /**
  * @author WFSO (仵士杰)
  * create by WFSO (仵士杰) at 2019/11/18 19:55
  */
 public interface Dispatcher {
+  void dispatch(Object event, List<Listener<?>> listeners);
 }

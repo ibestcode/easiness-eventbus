@@ -8,9 +8,12 @@
 
 package cn.ibestcode.easiness.eventbus.listener;
 
+import java.util.List;
+
 /**
  * @author WFSO (仵士杰)
- * create by WFSO (仵士杰) at 2019/11/18 20:58
+ * create by WFSO (仵士杰) at 2019/11/19 19:15
  */
-public class ListenerRegistrar {
+public interface ListenerResolver {
+  List<Listener<?>> getListeners(Object instance);
 }

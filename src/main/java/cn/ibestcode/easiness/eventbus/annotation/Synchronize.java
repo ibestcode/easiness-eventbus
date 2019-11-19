@@ -6,11 +6,16 @@
  * See the LICENSE file in the project root for more information.
  */
 
-package cn.ibestcode.easiness.eventbus.dispatcher;
+package cn.ibestcode.easiness.eventbus.annotation;
+
+import java.lang.annotation.*;
 
 /**
  * @author WFSO (仵士杰)
- * create by WFSO (仵士杰) at 2019/11/18 19:55
+ * create by WFSO (仵士杰) at 2019/11/19 19:06
  */
-public class BreadthFirstDispatcher {
+@Target({ElementType.METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+public @interface Synchronize {
 }

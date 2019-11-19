@@ -8,9 +8,25 @@
 
 package cn.ibestcode.easiness.eventbus;
 
+import cn.ibestcode.easiness.eventbus.dispatcher.*;
+
+import java.util.concurrent.Executors;
+
 /**
  * @author WFSO (仵士杰)
  * create by WFSO (仵士杰) at 2019/11/18 19:55
  */
-public class AsyncEventBus {
+public class AsyncEventBus extends AbstractEventBus {
+
+  private AsyncEventBus(int poolSize) {
+    super(new AsyncDispatcher(Executors.newScheduledThreadPool(poolSize)));
+  }
+
+  public static AsyncEventBus getInstance() {
+    return new AsyncEventBus(10);
+  }
+
+  public static AsyncEventBus getInstance(int poolSize) {
+    return new AsyncEventBus(poolSize);
+  }
 }
