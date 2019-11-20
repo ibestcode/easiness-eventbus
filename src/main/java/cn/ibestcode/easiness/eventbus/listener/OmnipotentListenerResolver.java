@@ -21,12 +21,14 @@ public class OmnipotentListenerResolver extends AbstractListenerResolver {
   public OmnipotentListenerResolver() {
   }
 
-  public OmnipotentListenerResolver(Class<? extends Annotation> annotationClass) {
-    super(annotationClass);
+  public OmnipotentListenerResolver(Class<? extends Annotation> subscribeAnnotationClass,
+                                    Class<? extends Annotation> listenerAnnotationClass) {
+
+    super(subscribeAnnotationClass, listenerAnnotationClass);
   }
 
   @Override
-  protected Listener<?> generateListener(Object instance, Method method) {
+  protected Listener generateListener(Object instance, Method method) {
     return method.isAnnotationPresent(Synchronize.class) ?
       new SynchronizedOmnipotentListener(instance, method)
       : new OmnipotentListener(instance, method);

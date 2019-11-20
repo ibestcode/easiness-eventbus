@@ -45,7 +45,7 @@ public class BreadthDispatcher implements Dispatcher {
     };
 
   @Override
-  public void dispatch(Object event, List<Listener<?>> listeners) {
+  public void dispatch(Object event, List<Listener> listeners) {
     if (event == null) {
       throw new NullPointerException("the event can't be null");
     }

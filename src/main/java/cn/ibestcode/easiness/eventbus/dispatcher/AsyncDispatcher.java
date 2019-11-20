@@ -33,7 +33,7 @@ public class AsyncDispatcher implements Dispatcher {
   }
 
   @Override
-  public void dispatch(Object event, List<Listener<?>> listeners) {
+  public void dispatch(Object event, List<Listener> listeners) {
     for (final Listener listener : listeners) {
       executor.execute(
         new Runnable() {

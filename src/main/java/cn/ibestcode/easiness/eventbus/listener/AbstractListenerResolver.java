@@ -8,13 +8,13 @@
 
 package cn.ibestcode.easiness.eventbus.listener;
 
+import cn.ibestcode.easiness.eventbus.annotation.EventListener;
 import cn.ibestcode.easiness.eventbus.annotation.Subscribe;
 
-import java.lang.annotation.Annotation;
+import java.lang.annotation.*;
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author WFSO (仵士杰)
@@ -22,66 +22,99 @@ import java.util.List;
  */
 public abstract class AbstractListenerResolver implements ListenerResolver {
 
-  private Class<? extends Annotation> annotationClass;
+  private Class<? extends Annotation> subscribeAnnotation;
+  private Class<? extends Annotation> listenerAnnotation;
 
   public AbstractListenerResolver() {
-    this(Subscribe.class);
+    this(Subscribe.class, EventListener.class);
   }
 
-  public AbstractListenerResolver(Class<? extends Annotation> annotationClass) {
-    if (annotationClass == null) {
-      throw new NullPointerException("annotationClass can be Null");
+  public AbstractListenerResolver(Class<? extends Annotation> subscribeAnnotation,
+                                  Class<? extends Annotation> listenerAnnotation) {
+    if (subscribeAnnotation == null) {
+      throw new NullPointerException("subscribeAnnotation can be Null");
     }
-    this.annotationClass = annotationClass;
+    if (listenerAnnotation == null) {
+      throw new NullPointerException("listenerAnnotation can be Null");
+    }
+    this.subscribeAnnotation = subscribeAnnotation;
+    this.listenerAnnotation = listenerAnnotation;
   }
 
   @Override
-  public List<Listener<?>> getListeners(Object instance) {
+  public List<Listener> getListeners(Object instance) {
     if (instance == null) {
       return Collections.emptyList();
     }
 
-    final List<Listener<?>> listeners = new ArrayList<>();
+    final List<Listener> listeners = new ArrayList<>();
 
     // 实现了 Listener 接口的
     if (instance instanceof Listener) {
-      listeners.add((Listener<?>) instance);
+      listeners.add((Listener) instance);
     }
 
     // 由 Subscribe 注解的方法
-    listeners.addAll(getListenersBySubscribeAnnotation(instance));
+    if (isAnnotationPresent(instance.getClass(), listenerAnnotation)) {
+      listeners.addAll(getListenersBySubscribeAnnotation(instance));
+    }
 
     return listeners;
   }
 
-  private List<Listener<?>> getListenersBySubscribeAnnotation(Object instance) {
+  private List<Listener> getListenersBySubscribeAnnotation(Object instance) {
     List<Method> methods = getAnnotatedMethods(instance.getClass());
     if (methods == null || methods.isEmpty()) {
       return Collections.emptyList();
     }
-    List<Listener<?>> listeners = new ArrayList<>(methods.size());
+    List<Listener> listeners = new ArrayList<>(methods.size());
     for (Method method : methods) {
       listeners.add(generateListener(instance, method));
     }
     return listeners;
   }
 
-  protected abstract Listener<?> generateListener(Object instance, Method method);
+  protected abstract Listener generateListener(Object instance, Method method);
 
 
-  private List<Method> getAnnotatedMethods(final Class<?> type) {
+  private List<Method> getAnnotatedMethods(final Class type) {
     final List<Method> methods = new ArrayList<>();
-    Class<?> clazz = type;
+    Class clazz = type;
     while (!Object.class.equals(clazz)) {
       Method[] currentClassMethods = clazz.getDeclaredMethods();
       for (final Method method : currentClassMethods) {
-        if (method.isAnnotationPresent(annotationClass) && !method.isSynthetic()) {
+        if (isAnnotationPresent(method, subscribeAnnotation) && !method.isSynthetic()) {
           methods.add(method);
         }
       }
-      // move to the upper class in the hierarchy in search for more methods
+      // 获取其父类，以搜索更多的方法
+      // 直到 Object 类为止
       clazz = clazz.getSuperclass();
     }
     return methods;
+  }
+
+  private static final List<Class<? extends Annotation>> metaAnnotations = Arrays.asList(
+    Target.class, Retention.class, Inherited.class, Documented.class
+  );
+
+  private boolean isAnnotationPresent(AnnotatedElement element, Class<? extends Annotation> annotationClass) {
+    Set<AnnotatedElement> processedClasses = new HashSet<>();
+    Queue<AnnotatedElement> pendingQueue = new LinkedList<>();
+    pendingQueue.offer(element);
+    while ((element = pendingQueue.poll()) != null) {
+      if (element.isAnnotationPresent(annotationClass)) {
+        return true;
+      }
+      processedClasses.add(element);
+      for (Annotation annotation : element.getAnnotations()) {
+        Class<? extends Annotation> annotationType = annotation.annotationType();
+        if (!metaAnnotations.contains(annotationType) && !processedClasses.contains(annotationType)) {
+          pendingQueue.offer(annotationType);
+        }
+
+      }
+    }
+    return false;
   }
 }

@@ -10,6 +10,8 @@ package cn.ibestcode.easiness.eventbus;
 
 import cn.ibestcode.easiness.eventbus.dispatcher.*;
 
+import java.lang.annotation.Annotation;
+
 /**
  * @author WFSO (仵士杰)
  * create by WFSO (仵士杰) at 2019/11/18 19:55
@@ -17,6 +19,34 @@ import cn.ibestcode.easiness.eventbus.dispatcher.*;
 public class TransactionEventBus extends AbstractEventBus {
   private TransactionEventBus(Dispatcher dispatcher) {
     super(dispatcher);
+  }
+
+  private TransactionEventBus(
+    Class<? extends Annotation> subscribeAnnotation,
+    Class<? extends Annotation> listenerAnnotation,
+    Dispatcher dispatcher) {
+    super(subscribeAnnotation, listenerAnnotation, dispatcher);
+  }
+
+  public static TransactionEventBus getDepthInstance(
+    Class<? extends Annotation> subscribeAnnotation,
+    Class<? extends Annotation> listenerAnnotation) {
+    return new TransactionEventBus(
+      subscribeAnnotation,
+      listenerAnnotation,
+      new DepthDispatcher()
+    );
+  }
+
+  public static TransactionEventBus getBreadthInstance(
+    Class<? extends Annotation> subscribeAnnotation,
+    Class<? extends Annotation> listenerAnnotation
+  ) {
+    return new TransactionEventBus(
+      subscribeAnnotation,
+      listenerAnnotation,
+      new BreadthDispatcher()
+    );
   }
 
   public static TransactionEventBus getDepthInstance() {

@@ -26,7 +26,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 public class AbstractEventBus implements EventBus {
 
   // 使用线程安全的容器类
-  private final ConcurrentMap<Class<?>, CopyOnWriteArraySet<Listener<?>>> listeners = new ConcurrentHashMap<>();
+  private final ConcurrentMap<Class, CopyOnWriteArraySet<Listener>> listeners = new ConcurrentHashMap<>();
 
   private final ListenerResolver listenerResolver;
 
@@ -37,25 +37,31 @@ public class AbstractEventBus implements EventBus {
     this.dispatcher = dispatcher;
   }
 
-  public AbstractEventBus(Class<? extends Annotation> annotationClass, Dispatcher dispatcher) {
-    this.listenerResolver = new OmnipotentListenerResolver(annotationClass);
+  public AbstractEventBus(
+    Class<? extends Annotation> subscribeAnnotation,
+    Class<? extends Annotation> listenerAnnotation,
+    Dispatcher dispatcher) {
+    this.listenerResolver = new OmnipotentListenerResolver(
+      subscribeAnnotation,
+      listenerAnnotation
+    );
     this.dispatcher = dispatcher;
   }
 
   @Override
   public void register(Object listener) {
-    List<Listener<?>> listenerList = listenerResolver.getListeners(listener);
-    Map<Class<?>, List<Listener<?>>> map = mergeToMap(listenerList);
+    List<Listener> listenerList = listenerResolver.getListeners(listener);
+    Map<Class, List<Listener>> map = mergeToMap(listenerList);
 
-    for (Map.Entry<Class<?>, List<Listener<?>>> entry : map.entrySet()) {
-      Class<?> eventType = entry.getKey();
-      List<Listener<?>> list = entry.getValue();
+    for (Map.Entry<Class, List<Listener>> entry : map.entrySet()) {
+      Class eventType = entry.getKey();
+      List<Listener> list = entry.getValue();
 
-      CopyOnWriteArraySet<Listener<?>> listenerSet = listeners.get(eventType);
+      CopyOnWriteArraySet<Listener> listenerSet = listeners.get(eventType);
 
       if (listenerSet == null) {
-        CopyOnWriteArraySet<Listener<?>> newSet = new CopyOnWriteArraySet<>();
-        CopyOnWriteArraySet<Listener<?>> tmpSet = listeners.putIfAbsent(eventType, newSet);
+        CopyOnWriteArraySet<Listener> newSet = new CopyOnWriteArraySet<>();
+        CopyOnWriteArraySet<Listener> tmpSet = listeners.putIfAbsent(eventType, newSet);
         listenerSet = tmpSet == null ? newSet : tmpSet;
       }
 
@@ -66,14 +72,14 @@ public class AbstractEventBus implements EventBus {
 
   @Override
   public void unregister(Object listener) {
-    List<Listener<?>> listenerList = listenerResolver.getListeners(listener);
-    Map<Class<?>, List<Listener<?>>> map = mergeToMap(listenerList);
+    List<Listener> listenerList = listenerResolver.getListeners(listener);
+    Map<Class, List<Listener>> map = mergeToMap(listenerList);
 
-    for (Map.Entry<Class<?>, List<Listener<?>>> entry : map.entrySet()) {
-      Class<?> eventType = entry.getKey();
-      List<Listener<?>> list = entry.getValue();
+    for (Map.Entry<Class, List<Listener>> entry : map.entrySet()) {
+      Class eventType = entry.getKey();
+      List<Listener> list = entry.getValue();
 
-      CopyOnWriteArraySet<Listener<?>> listenerSet = listeners.get(eventType);
+      CopyOnWriteArraySet<Listener> listenerSet = listeners.get(eventType);
 
       if (listenerSet == null || !listenerSet.removeAll(list)) {
         throw new IllegalArgumentException(
@@ -85,12 +91,17 @@ public class AbstractEventBus implements EventBus {
 
   @Override
   public void post(Object event) {
-    List<Listener<?>> listeners = getListenersByEvent(event);
-    dispatcher.dispatch(event,listeners);
+    List<Listener> listeners = getListenersByEvent(event);
+    if (listeners != null && listeners.size() > 0) {
+      dispatcher.dispatch(event, listeners);
+    } else if (!(event instanceof FailedEvent)) {
+      // 如果事件没有订阅者，且不是失败事件，则触发失败事件
+      post(new FailedEvent(this, event));
+    }
   }
 
-  private Map<Class<?>, List<Listener<?>>> mergeToMap(List<Listener<?>> listeners) {
-    final Map<Class<?>, List<Listener<?>>> map = new HashMap<>();
+  private Map<Class, List<Listener>> mergeToMap(List<Listener> listeners) {
+    final Map<Class, List<Listener>> map = new HashMap<>();
     for (Listener listener : listeners) {
       if (!map.containsKey(listener.supports())) {
         map.put(listener.supports(), new ArrayList<>());
@@ -100,17 +111,20 @@ public class AbstractEventBus implements EventBus {
     return map;
   }
 
-  private List<Listener<?>> getListenersByEvent(Object event) {
-    List<Listener<?>> listenerList = new ArrayList<>();
-    for (Class<?> eventType : getClassHierarchy(event.getClass())) {
-      listenerList.addAll(listeners.get(eventType));
+  private List<Listener> getListenersByEvent(Object event) {
+    List<Listener> listenerList = new ArrayList<>();
+    for (Class eventType : getClassHierarchy(event.getClass())) {
+      Set<Listener> listenerSet = listeners.get(eventType);
+      if (listenerSet != null) {
+        listenerList.addAll(listenerSet);
+      }
     }
     return listenerList;
   }
 
   // 获取类的承继结构
-  private List<Class<?>> getClassHierarchy(Class<?> clazz) {
-    List<Class<?>> classes = new ArrayList<>();
+  private List<Class> getClassHierarchy(Class clazz) {
+    List<Class> classes = new ArrayList<>();
     while (!Object.class.equals(clazz)) {
       classes.add(clazz);
       // move to the upper class in the hierarchy in search for more methods

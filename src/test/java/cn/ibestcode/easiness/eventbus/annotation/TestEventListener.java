@@ -6,14 +6,18 @@
  * See the LICENSE file in the project root for more information.
  */
 
-package cn.ibestcode.easiness.eventbus.listener;
+package cn.ibestcode.easiness.eventbus.annotation;
 
-import java.util.List;
+import java.lang.annotation.*;
 
 /**
  * @author WFSO (仵士杰)
- * create by WFSO (仵士杰) at 2019/11/19 19:15
+ * create by WFSO (仵士杰) at 2019/11/20 19:23
  */
-public interface ListenerResolver {
-  List<Listener> getListeners(Object instance);
+@Target({ElementType.TYPE})
+@Retention(RetentionPolicy.RUNTIME)
+@Inherited
+@Documented
+@EventListener
+public @interface TestEventListener {
 }

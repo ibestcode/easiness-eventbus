@@ -12,8 +12,8 @@ package cn.ibestcode.easiness.eventbus.listener;
  * @author WFSO (仵士杰)
  * create by WFSO (仵士杰) at 2019/11/18 19:55
  */
-public interface Listener<T> {
-  Class<T> supports();
+public interface Listener {
+  Class supports();
 
-  void handle(final T event);
+  void handle(final Object event);
 }

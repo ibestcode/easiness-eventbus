@@ -20,7 +20,7 @@ import java.lang.reflect.Modifier;
  */
 public class OmnipotentListener implements Listener {
 
-  private final Class<?> supportType;
+  private final Class supportType;
   private final Object target;
   private final Method method;
 
@@ -69,5 +69,34 @@ public class OmnipotentListener implements Listener {
       }
       throw new EventBusException("EventBus InvocationTargetException: " + event, e.getCause());
     }
+  }
+
+
+  @Override
+  public final int hashCode() {
+    return (7 + method.hashCode()) * 7 + target.hashCode();
+  }
+
+  @Override
+  public final boolean equals(Object obj) {
+    if (obj instanceof OmnipotentListener) {
+      OmnipotentListener that = (OmnipotentListener) obj;
+
+      /**
+       * 同“事件监听器类”的不同“实例对象”下的同一个“监听器方法”是否允许重复注册，
+       * 由“事件监听器类”的 hashCode 和equals 方法决定；
+       *
+       * 如果“事件监听器类”不重载 Object 类 hashCode 和 equals 方法，
+       * 则同“事件监听器类”的不同“实例对象”下的同一个“监听器方法”是允许重复注册的；
+       * 此时只防止同“事件监听器类”且同“实例对象”下的同一个“监听器方法”被多次注册；
+       *
+       * 如果“事件监听器类”重载了  Object 类 hashCode 和 equals 方法，
+       * 则当同“事件监听器类”的两个不同“实例对象” 用 equals 方法判断相等时，
+       * 这两个“实例对象”中的同一个“监听器方法”不会被重复注册（只有一个被注册）；
+       *
+       */
+      return target.equals(that.target) && method.equals(that.method);
+    }
+    return false;
   }
 }

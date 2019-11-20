@@ -10,6 +10,7 @@ package cn.ibestcode.easiness.eventbus;
 
 import cn.ibestcode.easiness.eventbus.dispatcher.*;
 
+import java.lang.annotation.Annotation;
 import java.util.concurrent.Executors;
 
 /**
@@ -22,11 +23,33 @@ public class AsyncEventBus extends AbstractEventBus {
     super(new AsyncDispatcher(Executors.newScheduledThreadPool(poolSize)));
   }
 
+  private AsyncEventBus(
+    Class<? extends Annotation> subscribeAnnotation,
+    Class<? extends Annotation> listenerAnnotation,
+    int poolSize) {
+    super(
+      subscribeAnnotation,
+      listenerAnnotation,
+      new AsyncDispatcher(Executors.newScheduledThreadPool(poolSize))
+    );
+  }
+
   public static AsyncEventBus getInstance() {
     return new AsyncEventBus(10);
   }
 
   public static AsyncEventBus getInstance(int poolSize) {
     return new AsyncEventBus(poolSize);
+  }
+
+  public static AsyncEventBus getInstance(
+    Class<? extends Annotation> subscribeAnnotation,
+    Class<? extends Annotation> listenerAnnotation,
+    int poolSize) {
+    return new AsyncEventBus(
+      subscribeAnnotation,
+      listenerAnnotation,
+      poolSize
+    );
   }
 }

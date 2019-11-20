@@ -9,6 +9,7 @@
 package cn.ibestcode.easiness.eventbus.listener;
 
 import cn.ibestcode.easiness.eventbus.annotation.Subscribe;
+import cn.ibestcode.easiness.eventbus.annotation.TestEventListener;
 import cn.ibestcode.easiness.eventbus.event.LogEvent;
 import cn.ibestcode.easiness.eventbus.event.ExceptionEvent;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
  * create by WFSO (仵士杰) at 2019/11/19 19:18
  */
 @Slf4j
+@TestEventListener
 public class TestListener {
 
   @Subscribe

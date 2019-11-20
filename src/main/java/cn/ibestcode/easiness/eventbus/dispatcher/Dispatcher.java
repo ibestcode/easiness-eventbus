@@ -17,5 +17,5 @@ import java.util.List;
  * create by WFSO (仵士杰) at 2019/11/18 19:55
  */
 public interface Dispatcher {
-  void dispatch(Object event, List<Listener<?>> listeners);
+  void dispatch(Object event, List<Listener> listeners);
 }

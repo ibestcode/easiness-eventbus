@@ -19,7 +19,7 @@ import java.util.List;
 public class DepthDispatcher implements Dispatcher {
 
   @Override
-  public void dispatch(Object event, List<Listener<?>> listeners) {
+  public void dispatch(Object event, List<Listener> listeners) {
     for (Listener listener : listeners) {
       listener.handle(event);
     }

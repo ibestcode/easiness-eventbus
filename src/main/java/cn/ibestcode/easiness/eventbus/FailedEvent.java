@@ -6,14 +6,18 @@
  * See the LICENSE file in the project root for more information.
  */
 
-package cn.ibestcode.easiness.eventbus.listener;
+package cn.ibestcode.easiness.eventbus;
 
-import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
 /**
  * @author WFSO (仵士杰)
- * create by WFSO (仵士杰) at 2019/11/19 19:15
+ * create by WFSO (仵士杰) at 2019/11/20 19:13
  */
-public interface ListenerResolver {
-  List<Listener> getListeners(Object instance);
+@Data
+@AllArgsConstructor
+public class FailedEvent {
+  private EventBus eventBus;
+  private Object event;
 }
