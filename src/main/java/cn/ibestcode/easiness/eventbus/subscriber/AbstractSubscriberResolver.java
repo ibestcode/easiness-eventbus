@@ -6,9 +6,9 @@
  * See the LICENSE file in the project root for more information.
  */
 
-package cn.ibestcode.easiness.eventbus.listener;
+package cn.ibestcode.easiness.eventbus.subscriber;
 
-import cn.ibestcode.easiness.eventbus.annotation.EventListener;
+import cn.ibestcode.easiness.eventbus.annotation.Listener;
 import cn.ibestcode.easiness.eventbus.annotation.Subscribe;
 
 import java.lang.annotation.*;
@@ -20,17 +20,17 @@ import java.util.*;
  * @author WFSO (仵士杰)
  * create by WFSO (仵士杰) at 2019/11/19 19:25
  */
-public abstract class AbstractListenerResolver implements ListenerResolver {
+public abstract class AbstractSubscriberResolver implements SubscriberResolver {
 
-  private Class<? extends Annotation> subscribeAnnotation;
-  private Class<? extends Annotation> listenerAnnotation;
+  private final Class<? extends Annotation> subscribeAnnotation;
+  private final Class<? extends Annotation> listenerAnnotation;
 
-  public AbstractListenerResolver() {
-    this(Subscribe.class, EventListener.class);
+  protected AbstractSubscriberResolver() {
+    this(Subscribe.class, Listener.class);
   }
 
-  public AbstractListenerResolver(Class<? extends Annotation> subscribeAnnotation,
-                                  Class<? extends Annotation> listenerAnnotation) {
+  protected AbstractSubscriberResolver(Class<? extends Annotation> subscribeAnnotation,
+                                       Class<? extends Annotation> listenerAnnotation) {
     if (subscribeAnnotation == null) {
       throw new NullPointerException("subscribeAnnotation can be Null");
     }
@@ -42,39 +42,34 @@ public abstract class AbstractListenerResolver implements ListenerResolver {
   }
 
   @Override
-  public List<Listener> getListeners(Object instance) {
+  public List<Subscriber> getListeners(Object instance) {
     if (instance == null) {
       return Collections.emptyList();
     }
 
-    final List<Listener> listeners = new ArrayList<>();
-
-    // 实现了 Listener 接口的
-    if (instance instanceof Listener) {
-      listeners.add((Listener) instance);
-    }
+    final List<Subscriber> subscribers = new ArrayList<>();
 
     // 由 Subscribe 注解的方法
     if (isAnnotationPresent(instance.getClass(), listenerAnnotation)) {
-      listeners.addAll(getListenersBySubscribeAnnotation(instance));
+      subscribers.addAll(getListenersBySubscribeAnnotation(instance));
     }
 
-    return listeners;
+    return subscribers;
   }
 
-  private List<Listener> getListenersBySubscribeAnnotation(Object instance) {
+  private List<Subscriber> getListenersBySubscribeAnnotation(Object instance) {
     List<Method> methods = getAnnotatedMethods(instance.getClass());
     if (methods == null || methods.isEmpty()) {
       return Collections.emptyList();
     }
-    List<Listener> listeners = new ArrayList<>(methods.size());
+    List<Subscriber> subscribers = new ArrayList<>(methods.size());
     for (Method method : methods) {
-      listeners.add(generateListener(instance, method));
+      subscribers.add(generateListener(instance, method));
     }
-    return listeners;
+    return subscribers;
   }
 
-  protected abstract Listener generateListener(Object instance, Method method);
+  protected abstract Subscriber generateListener(Object instance, Method method);
 
 
   private List<Method> getAnnotatedMethods(final Class type) {
@@ -98,7 +93,7 @@ public abstract class AbstractListenerResolver implements ListenerResolver {
     Target.class, Retention.class, Inherited.class, Documented.class
   );
 
-  private boolean isAnnotationPresent(AnnotatedElement element, Class<? extends Annotation> annotationClass) {
+  protected boolean isAnnotationPresent(AnnotatedElement element, Class<? extends Annotation> annotationClass) {
     Set<AnnotatedElement> processedClasses = new HashSet<>();
     Queue<AnnotatedElement> pendingQueue = new LinkedList<>();
     pendingQueue.offer(element);

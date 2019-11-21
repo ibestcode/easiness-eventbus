@@ -18,6 +18,6 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Documented
-@EventListener
+@Listener
 public @interface TestEventListener {
 }

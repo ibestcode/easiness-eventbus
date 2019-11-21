@@ -6,17 +6,22 @@
  * See the LICENSE file in the project root for more information.
  */
 
-package cn.ibestcode.easiness.eventbus.listener;
+package cn.ibestcode.easiness.eventbus.subscriber;
 
 import java.lang.reflect.Method;
+import java.util.concurrent.Executor;
 
 /**
  * @author WFSO (仵士杰)
  * create by WFSO (仵士杰) at 2019/11/18 19:55
  */
-public final class SynchronizedOmnipotentListener extends OmnipotentListener {
+public final class SynchronizedOmnipotentSubscriber extends OmnipotentSubscriber {
 
-  public SynchronizedOmnipotentListener(Object target, Method method) {
+  public SynchronizedOmnipotentSubscriber(Object target, Method method, Executor executor) {
+    super(target, method, executor);
+  }
+
+  public SynchronizedOmnipotentSubscriber(Object target, Method method) {
     super(target, method);
   }
 

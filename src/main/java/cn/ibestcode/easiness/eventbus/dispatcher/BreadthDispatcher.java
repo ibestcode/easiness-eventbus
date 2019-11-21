@@ -8,7 +8,7 @@
 
 package cn.ibestcode.easiness.eventbus.dispatcher;
 
-import cn.ibestcode.easiness.eventbus.listener.Listener;
+import cn.ibestcode.easiness.eventbus.subscriber.Subscriber;
 
 import java.util.ArrayDeque;
 import java.util.List;
@@ -25,10 +25,10 @@ public class BreadthDispatcher implements Dispatcher {
    * 但每次调用 EventBus.post(event) 所触发的全部事件监听器，都会在调用
    * EventBus.post(event) 的当前线程中执行（不会开新的线程执行事件监听器）；
    */
-  private final ThreadLocal<Queue<EventWithListener>> queue =
-    new ThreadLocal<Queue<EventWithListener>>() {
+  private final ThreadLocal<Queue<EventWithSubscriber>> queue =
+    new ThreadLocal<Queue<EventWithSubscriber>>() {
       @Override
-      protected Queue<EventWithListener> initialValue() {
+      protected Queue<EventWithSubscriber> initialValue() {
         return new ArrayDeque<>();
       }
     };
@@ -45,25 +45,25 @@ public class BreadthDispatcher implements Dispatcher {
     };
 
   @Override
-  public void dispatch(Object event, List<Listener> listeners) {
+  public void dispatch(Object event, List<Subscriber> subscribers) {
     if (event == null) {
       throw new NullPointerException("the event can't be null");
     }
-    if (listeners == null) {
-      throw new NullPointerException("the listeners can't be null");
+    if (subscribers == null) {
+      throw new NullPointerException("the subscribers can't be null");
     }
 
-    Queue<EventWithListener> queueForThread = queue.get();
-    for (Listener listener : listeners) {
-      queueForThread.offer(new EventWithListener(event, listener));
+    Queue<EventWithSubscriber> queueForThread = queue.get();
+    for (Subscriber subscriber : subscribers) {
+      queueForThread.offer(new EventWithSubscriber(event, subscriber));
     }
 
     if (!dispatching.get()) {
       dispatching.set(true);
       try {
-        EventWithListener eventWithListener;
-        while ((eventWithListener = queueForThread.poll()) != null) {
-          eventWithListener.listener.handle(eventWithListener.event);
+        EventWithSubscriber eventWithSubscriber;
+        while ((eventWithSubscriber = queueForThread.poll()) != null) {
+          eventWithSubscriber.subscriber.handle(eventWithSubscriber.event);
         }
       } finally {
         dispatching.remove();
@@ -72,13 +72,13 @@ public class BreadthDispatcher implements Dispatcher {
     }
   }
 
-  private static class EventWithListener {
+  private static class EventWithSubscriber {
     private final Object event;
-    private final Listener listener;
+    private final Subscriber subscriber;
 
-    public EventWithListener(Object event, Listener listener) {
+    public EventWithSubscriber(Object event, Subscriber subscriber) {
       this.event = event;
-      this.listener = listener;
+      this.subscriber = subscriber;
     }
   }
 }

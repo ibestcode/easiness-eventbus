@@ -6,31 +6,40 @@
  * See the LICENSE file in the project root for more information.
  */
 
-package cn.ibestcode.easiness.eventbus.listener;
+package cn.ibestcode.easiness.eventbus.subscriber;
 
 import cn.ibestcode.easiness.eventbus.exception.EventBusException;
+import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.concurrent.Executor;
 
 /**
  * @author WFSO (仵士杰)
  * create by WFSO (仵士杰) at 2019/11/18 19:55
  */
-public class OmnipotentListener implements Listener {
+@Slf4j
+public class OmnipotentSubscriber implements Subscriber {
 
   private final Class supportType;
   private final Object target;
   private final Method method;
+  private final Executor executor;
 
-  public OmnipotentListener(Object target, Method method) {
+  public OmnipotentSubscriber(Object target, Method method, Executor executor) {
     this.target = target;
     this.method = method;
+    this.executor = executor;
 
     this.supportType = getMethodArgumentType(method);
 
     assertPublicMethod(method);
+  }
+
+  public OmnipotentSubscriber(Object target, Method method) {
+    this(target, method, null);
   }
 
   protected Class getMethodArgumentType(Method method) {
@@ -56,6 +65,23 @@ public class OmnipotentListener implements Listener {
 
   @Override
   public void handle(Object event) {
+    if (executor == null) {
+      immediate(event);
+    } else {
+      executor.execute(new Runnable() {
+        @Override
+        public void run() {
+          try {
+            immediate(event);
+          } catch (Throwable e) {
+            log.error("Event Execute Fail: " + e.getMessage(), e);
+          }
+        }
+      });
+    }
+  }
+
+  private void immediate(Object event) {
     try {
       method.invoke(target, event);
     } catch (IllegalAccessException e) {
@@ -71,7 +97,6 @@ public class OmnipotentListener implements Listener {
     }
   }
 
-
   @Override
   public final int hashCode() {
     return (7 + method.hashCode()) * 7 + target.hashCode();
@@ -79,8 +104,8 @@ public class OmnipotentListener implements Listener {
 
   @Override
   public final boolean equals(Object obj) {
-    if (obj instanceof OmnipotentListener) {
-      OmnipotentListener that = (OmnipotentListener) obj;
+    if (obj instanceof OmnipotentSubscriber) {
+      OmnipotentSubscriber that = (OmnipotentSubscriber) obj;
 
       /**
        * 同“事件监听器类”的不同“实例对象”下的同一个“监听器方法”是否允许重复注册，

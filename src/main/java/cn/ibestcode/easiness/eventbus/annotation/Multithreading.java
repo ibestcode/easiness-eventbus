@@ -6,16 +6,16 @@
  * See the LICENSE file in the project root for more information.
  */
 
-package cn.ibestcode.easiness.eventbus.dispatcher;
+package cn.ibestcode.easiness.eventbus.annotation;
 
-import cn.ibestcode.easiness.eventbus.subscriber.Subscriber;
-
-import java.util.List;
+import java.lang.annotation.*;
 
 /**
  * @author WFSO (仵士杰)
- * create by WFSO (仵士杰) at 2019/11/18 19:55
+ * create by WFSO (仵士杰) at 2019/11/21 19:36
  */
-public interface Dispatcher {
-  void dispatch(Object event, List<Subscriber> subscribers);
+@Target({ElementType.METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+public @interface Multithreading {
 }

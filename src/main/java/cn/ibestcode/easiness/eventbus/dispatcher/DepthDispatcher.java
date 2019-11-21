@@ -8,7 +8,7 @@
 
 package cn.ibestcode.easiness.eventbus.dispatcher;
 
-import cn.ibestcode.easiness.eventbus.listener.Listener;
+import cn.ibestcode.easiness.eventbus.subscriber.Subscriber;
 
 import java.util.List;
 
@@ -19,9 +19,9 @@ import java.util.List;
 public class DepthDispatcher implements Dispatcher {
 
   @Override
-  public void dispatch(Object event, List<Listener> listeners) {
-    for (Listener listener : listeners) {
-      listener.handle(event);
+  public void dispatch(Object event, List<Subscriber> subscribers) {
+    for (Subscriber subscriber : subscribers) {
+      subscriber.handle(event);
     }
   }
 }

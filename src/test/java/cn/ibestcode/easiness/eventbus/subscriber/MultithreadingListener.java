@@ -6,8 +6,9 @@
  * See the LICENSE file in the project root for more information.
  */
 
-package cn.ibestcode.easiness.eventbus.listener;
+package cn.ibestcode.easiness.eventbus.subscriber;
 
+import cn.ibestcode.easiness.eventbus.annotation.Multithreading;
 import cn.ibestcode.easiness.eventbus.annotation.Subscribe;
 import cn.ibestcode.easiness.eventbus.annotation.TestEventListener;
 import cn.ibestcode.easiness.eventbus.event.LogEvent;
@@ -20,16 +21,44 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @TestEventListener
-public class TestListener {
+public class MultithreadingListener {
 
   @Subscribe
+  @Multithreading
   public void logEventProcessor(LogEvent event) {
     log.info(this.getClass().getName() + " 处理了 " + event);
   }
 
 
   @Subscribe
+  @Multithreading
+  public void logEventProcessor2(LogEvent event) {
+    log.info(this.getClass().getName() + " 处理了 " + event);
+  }
+
+
+  @Subscribe
+  @Multithreading
+  public void logEventProcessor3(LogEvent event) {
+    log.info(this.getClass().getName() + " 处理了 " + event);
+  }
+
+
+  @Subscribe
+  @Multithreading
   public void exceptionEventProcessor(ExceptionEvent event) {
+    throw new RuntimeException("抛个异常试试");
+  }
+
+  @Subscribe
+  @Multithreading
+  public void exceptionEventProcessor2(ExceptionEvent event) {
+    throw new RuntimeException("抛个异常试试");
+  }
+
+  @Subscribe
+  @Multithreading
+  public void exceptionEventProcessor3(ExceptionEvent event) {
     throw new RuntimeException("抛个异常试试");
   }
 }
